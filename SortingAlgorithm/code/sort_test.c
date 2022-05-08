@@ -6,61 +6,22 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-// open core 
-//
-// ulimit -c unlimited
-//
-// cat /proc/sys/kernel/core_pattern
-// |/usr/share/apport/apport %p %s %c %d %P %E
-// cat /proc/sys/kernel/core_uses_pid
-// 0
-// su root
-// echo "1" > /proc/sys/kernel/core_uses_pid 
-// echo "core-%e-%p-%t" > /proc/sys/kernel/core_pattern
-
-/*
- %p - insert pid into filename 添加 pid
- %u - insert current uid into filename 添加当前 uid
- %g - insert current gid into filename 添加当前 gid
- %s - insert signal that caused the coredump into the filename 添加导致产生core的信号
- %t - insert UNIX time that the coredump occurred into filename 添加 core 文件生成时的unix时间
- %h - insert hostname where the coredump happened into filename 添加主机名
- %e - insert coredumping executable name into filename 添加命令名
- */
-
 // 为了简单, 我们假定数据都是 int, 并且最终结果要求 小 -> 大 升序
 // 测试大致思路:
 // 随机生成数据, 为了简单假定数据长度范围在 [LOW, HIGH] 之间, 持续 COUNT 轮测试.
 //
-#define LEN_LOW     (19)
-#define LEN_HIGH    (64)
+#define LOW     (19)
+#define HIGH    (64)
 
-#define TEST_COUNT  (89)
+#define COUNT   (89)
 
 typedef void (* sort_f)(int a[], int len);
 
-static void test_array_sort(sort_f fsort, const char * sort_name, int test_count);
-
-#define test_sort(fsort) test_array_sort(fsort, #fsort, TEST_COUNT)
-
-#include "sort_bubble.c"
-
-// build : 
-// gcc -g -O3 -Wall -Wextra -Werror -o sort_test sort_test.c
-int main(void) {
-    srand((unsigned)time(NULL));
-
-    test_sort(sort_bubble);
-    test_sort(sort_bubble_upgrade);
-
-    exit(EXIT_SUCCESS);
-}
-
-static int * test_array_create(int * len) {
-    assert(LEN_LOW < LEN_HIGH && LEN_LOW > 0);
+static int * array_create(int * len) {
+    assert(LOW < HIGH && LOW > 0);
 
     // 获取 n
-    int n = rand() % (LEN_HIGH - LEN_LOW + 1) + LEN_LOW;
+    int n = rand() % (HIGH - LOW + 1) + LOW;
     
     // 返回数组长度
     *len = n;
@@ -74,7 +35,7 @@ static int * test_array_create(int * len) {
     return array;
 }
 
-static int test_array_assert_partial(const char * sort_name, const int test_index, int * olda, int * a, int len) {
+static int sort_assert_partial(const char * sort_name, const int test_index, int * olda, int * a, int len) {
     // step 1: 大小检查, 默认升序
     for (int i = 1; i < len; i++) {
         if (a[i-1] <= a[i])
@@ -117,13 +78,12 @@ static int test_array_assert_partial(const char * sort_name, const int test_inde
     return 0;
 }
 
-
-static int test_array_assert(sort_f fsort, const char * sort_name, const int test_index, int a[], int len) {
+static int sort_assert(sort_f fsort, const char * sort_name, const int test_index, int a[], int len) {
     int * olda = memcpy(malloc(sizeof(int) * len), a, sizeof(int) * len);
     
     fsort(a, len);
 
-    int status = test_array_assert_partial(sort_name, test_index, olda, a, len);
+    int status = sort_assert_partial(sort_name, test_index, olda, a, len);
     if (status >= 0 || len > 100) {
         goto return_free_olda;
     }
@@ -153,15 +113,15 @@ return_free_olda:
     return status;
 }
 
-static void test_array_sort(sort_f fsort, const char * sort_name, int test_count) {
+static void test_sort(sort_f fsort, const char * sort_name, int test_count) {
     assert(fsort != NULL && sort_name != NULL && test_count > 0);
 
     fprintf(stdout, "sort %s 测试开始\n", sort_name);
 
     for (int i = 1; i <= test_count; i++) {
         int len;
-        int * a = test_array_create(&len);
-        int status = test_array_assert(fsort, sort_name, i, a, len);
+        int * a = array_create(&len);
+        int status = sort_assert(fsort, sort_name, i, a, len);
 
         fprintf(stdout, " %4d%s", i, status >= 0 ? "√" : "x");
         if (i % 10 == 0) {
@@ -174,4 +134,41 @@ static void test_array_sort(sort_f fsort, const char * sort_name, int test_count
 
     fprintf(stdout, "\n");
     fprintf(stdout, "sort %s 测试通过\n\n", sort_name);
+}
+
+// open core 
+//
+// ulimit -c unlimited
+//
+// cat /proc/sys/kernel/core_pattern
+// |/usr/share/apport/apport %p %s %c %d %P %E
+// cat /proc/sys/kernel/core_uses_pid
+// 0
+// su root
+// echo "1" > /proc/sys/kernel/core_uses_pid 
+// echo "core-%e-%p-%t" > /proc/sys/kernel/core_pattern
+
+/*
+ %p - insert pid into filename 添加 pid
+ %u - insert current uid into filename 添加当前 uid
+ %g - insert current gid into filename 添加当前 gid
+ %s - insert signal that caused the coredump into the filename 添加导致产生core的信号
+ %t - insert UNIX time that the coredump occurred into filename 添加 core 文件生成时的unix时间
+ %h - insert hostname where the coredump happened into filename 添加主机名
+ %e - insert coredumping executable name into filename 添加命令名
+ */
+
+#include "sort_bubble.c"
+
+#define TEST_SORT(fsort) test_sort(fsort, #fsort, COUNT)
+
+// build : 
+// gcc -g -O3 -Wall -Wextra -Werror -o sort_test sort_test.c
+int main(void) {
+    srand((unsigned)time(NULL));
+
+    TEST_SORT(sort_bubble);
+    TEST_SORT(sort_bubble_upgrade);
+
+    exit(EXIT_SUCCESS);
 }

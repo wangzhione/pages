@@ -37,7 +37,7 @@
 因为排序后数据一定是升序, 所以第一步保证最终排序后的数据是从小到大. 第二步保证原数组和排序后数组一一映射(olda <-> a)
 
 ```C
-static int test_array_assert_partial(const char * sort_name, const int test_index, int * olda, int * a, int len) {
+static int sort_assert_partial(const char * sort_name, const int test_index, int * olda, int * a, int len) {
     // step 1: 大小检查, 默认升序
     for (int i = 1; i < len; i++) {
         if (a[i-1] <= a[i])
