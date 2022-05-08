@@ -2,37 +2,26 @@
 #include <stdbool.h>
 
 void sort_bubble(int a[], int len) {
-    if (a == NULL || len <= 1) {
-        return;
-    }
-
-    for (int i = len; i > 1; i--) {
-        for (int j = 1; j < i; j++) {
-            if (a[j-1] > a[j]) {
-                int tmp = a[j-1];
-                a[j-1] = a[j];
-                a[j] = tmp;
+    for (; len > 1; len--) {
+        for (int i = 1; i < len; i++) {
+            if (a[i-1] > a[i]) {
+                int temp = a[i]; a[i] = a[i-1]; a[i-1] = temp;
             }
         }
     }
 }
 
 void sort_bubble_upgrade(int a[], int len) {
-    if (a == NULL || len <= 1) {
-        return;
-    }
-
-    bool keep = true;
-    for (int j = len; j > 1 && keep; j--) {
-        keep = false;
-        for (int i = 1; i < j; i++) {
+    for (; len > 1; len--) {
+        bool keep = true;
+        for (int i = 1; i < len; i++) {
             if (a[i-1] > a[i]) {
-                keep = true;
-
-                int tmp = a[i];
-                a[i] = a[i-1];
-                a[i-1] = tmp;
+                int temp = a[i]; a[i] = a[i-1]; a[i-1] = temp;
+                keep = false;
             }
+        }
+        if (keep) {
+            break;
         }
     }
 }

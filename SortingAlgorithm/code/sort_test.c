@@ -168,6 +168,7 @@ static void test_array_sort(sort_f fsort, const char * sort_name, int test_count
             fprintf(stdout, "\n");
         }
 
+        free(a);
         assert(status == 0);
     }
 
