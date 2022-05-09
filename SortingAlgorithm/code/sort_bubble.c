@@ -11,16 +11,16 @@ void sort_bubble(int a[], int len) {
     }
 }
 
-void sort_bubble_upgrade(int a[], int len) {
+void sort_bubble_flag(int a[], int len) {
     for (; len > 1; len--) {
-        bool keep = true;
+        bool flag = true;
         for (int i = 1; i < len; i++) {
             if (a[i-1] > a[i]) {
                 int temp = a[i]; a[i] = a[i-1]; a[i-1] = temp;
-                keep = false;
+                flag = false;
             }
         }
-        if (keep) {
+        if (flag) {
             break;
         }
     }

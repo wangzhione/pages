@@ -168,7 +168,7 @@ int main(void) {
     srand((unsigned)time(NULL));
 
     TEST_SORT(sort_bubble);
-    TEST_SORT(sort_bubble_upgrade);
+    TEST_SORT(sort_bubble_flag);
 
     exit(EXIT_SUCCESS);
 }

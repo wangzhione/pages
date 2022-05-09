@@ -83,7 +83,7 @@ static int sort_assert_partial(const char * sort_name, const int test_index, int
 
 sort_name 是 当前测试排序算法名称, test_index 是当前测试组索引, olda 是排序前数组, a 排序后数组, len 是数组长度. 返回 >=0 表示成功, < 0 表示失败. 更加详细实现参照 [sort_test.c](./code/sort_test.c)
 
-## 正文大纲
+## 正文目录
 
 1. [冒泡排序](1.bubbleSort.md)
 2. [选择排序](2.selectionSort.md)
@@ -95,4 +95,3 @@ sort_name 是 当前测试排序算法名称, test_index 是当前测试组索�
 8. [计数排序](8.countingSort.md)
 9. [桶排序](9.bucketSort.md)
 10. [基数排序](10.radixSort.md)
-
