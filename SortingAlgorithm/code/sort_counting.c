@@ -1,14 +1,9 @@
-# 计数排序
+#pragma once
 
-计数排序的核心在于将输入的数据值转化为键存储在额外开辟的数组空间中. 作为一种线性时间复杂度的排序, 计数排序要求输入的数据必须是有确定范围的整数.
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-## 1. 动图演示
-
-![动图演示](resources/countingSort.gif)
-
-## 2. C 语言描述
-
-```C
 // sort_counting int a[] 默认数据中 [min, max] 区间范围不是非常大, 例如 > 10 万
 void sort_counting(int a[], int len) {
     if (a == NULL || len <= 1) {
@@ -64,11 +59,7 @@ void sort_counting(int a[], int len) {
 
     free(counts);
 }
-```
 
-如果追求稳定, 可以申请临时空间, 通过倒序遍历原始数组 + 桶动态规划, 然后填充临时空间, 然后再交换.
-
-```C
 void sort_counting_stable(int a[], int len) {
     if (a == NULL || len <= 1) {
         return;
@@ -121,4 +112,30 @@ void sort_counting_stable(int a[], int len) {
     free(sorted);
     free(counts);
 }
-```
+
+#ifndef TEST_SORT_OFF
+
+// gcc -g -O3 -Wall -Wextra -Werror -o sort_counting sort_counting.c
+int main(void) {
+    int a[] = { 3, 4, 5, 700, 800, 19, 10, 11, 1000, 300, 1, 1, 45, 33 };
+    int len = sizeof(a) / sizeof(*a);
+
+    printf("原始:");
+    for (int i = 0; i < len; i++) {
+        printf(" %d", a[i]);
+    }
+    printf("\n");
+
+    // sort_counting(a, len);
+    sort_counting_stable(a, len);
+
+    printf("现在:");
+    for (int i = 0; i < len; i++) {
+        printf(" %d", a[i]);
+    }
+    printf("\n");
+
+    exit(EXIT_SUCCESS);
+}
+
+#endif//TEST_SORT_OFF

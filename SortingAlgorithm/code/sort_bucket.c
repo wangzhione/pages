@@ -1,33 +1,7 @@
-# 桶排序
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-桶排序是计数排序的升级版. 他利用了函数的映射关系, 高效与否的关键就在于这个映射函数的确定. 为了使桶排序更加高效, 我们需要做到这两点:
-
-1. 在额外空间充足的情况下, 尽量增大桶的数量
-2. 使用的映射函数能够将输入的 N 个数据均匀的分配到 K 个桶中
-
-同时, 对于桶中元素的排序, 选择何种比较排序算法对于性能的影响至关重要. 通俗的说就是将待排序的序列分到若干个桶中, 每个桶内的元素再进行个别排序. 是一种用空间换取时间的排序策略
-
-## 1. 什么时候最快
-
-当输入的数据可以均匀的分配到每一个桶中.
-
-## 2. 什么时候最慢
-
-当输入的数据被分配到了同一个桶中.
-
-## 3. 演示
-
-元素分布在桶中:
-
-![Bucket_sort_1.svg_.png](resources/Bucket_sort_1.svg_.png)
-
-然后，元素在每个桶中排序：
-
-![Bucket_sort_2.svg_.png](resources/Bucket_sort_2.svg_.png)
-
-## 3. C 语言描述
-
-```C
 static int sort_bucket_compare(void const * left, void const * right) {
     return *(int const *)left - *(int const *)right;
 }
@@ -94,6 +68,29 @@ void sort_bucket(int a[], int len) {
     free(lens);
     free(buckets);
 }
-```
 
-内存模块可以抽离出来做的更漂亮. 但最美还是分桶逻辑, 这样就可以利用多线程去处理 or 外排序等思路, 非常的灵活. 当下计数排序, 桶排序, 基数排序实现非常简陋, 欢迎同行补充更漂亮简便实现 ~ ♥
+#ifndef TEST_SORT_OFF
+
+// gcc -g -O3 -Wall -Wextra -Werror -o sort_bucket sort_bucket.c
+int main(void) {
+    int a[] = { 3, 4, 5, 700, 800, 19, 10, 11, 1000, 300, 1, 1, 45, 33 };
+    int len = sizeof(a) / sizeof(*a);
+
+    printf("原始:");
+    for (int i = 0; i < len; i++) {
+        printf(" %d", a[i]);
+    }
+    printf("\n");
+
+    sort_bucket(a, len);
+
+    printf("现在:");
+    for (int i = 0; i < len; i++) {
+        printf(" %d", a[i]);
+    }
+    printf("\n");
+
+    exit(EXIT_SUCCESS);
+}
+
+#endif//TEST_SORT_OFF

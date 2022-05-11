@@ -35,6 +35,24 @@ static int * array_create(int * len) {
     return array;
 }
 
+static int * array_create2(int * len) {
+    assert(LOW < HIGH && LOW > 0);
+
+    // 获取 n
+    int n = rand() % (HIGH - LOW + 1) + LOW;
+    
+    // 返回数组长度
+    *len = n;
+
+    int * array = malloc(sizeof(int) * n);
+
+    for (int i = 0; i < n; i++) {
+        array[i] = rand() % 1000;
+    }
+
+    return array;
+}
+
 static int sort_assert_partial(const char * sort_name, const int test_index, int * olda, int * a, int len) {
     // step 1: 大小检查, 默认升序
     for (int i = 1; i < len; i++) {
@@ -136,6 +154,24 @@ static void test_sort(sort_f fsort, const char * sort_name, int test_count) {
     fprintf(stdout, "sort %s 测试通过\n\n", sort_name);
 }
 
+static void test_sort2(sort_f fsort, const char * sort_name) {
+    assert(fsort != NULL && sort_name != NULL);
+
+    fprintf(stdout, "sort %s 测试开始\n", sort_name);
+
+    int len;
+    int * a = array_create2(&len);
+    int status = sort_assert(fsort, sort_name, 0, a, len);
+
+    fprintf(stdout, " %4d%s", 0, status >= 0 ? "√" : "x");
+
+    free(a);
+    assert(status == 0);
+
+    fprintf(stdout, "\n");
+    fprintf(stdout, "sort %s 测试通过\n\n", sort_name);
+}
+
 // open core 
 //
 // ulimit -c unlimited
@@ -167,6 +203,8 @@ static void test_sort(sort_f fsort, const char * sort_name, int test_count) {
 #include "sort_merge.c"
 #include "sort_quick.c"
 #include "sort_heap.c"
+#include "sort_counting.c"
+#include "sort_bucket.c"
 
 #define TEST_SORT(fsort) test_sort(fsort, #fsort, COUNT)
 
@@ -192,6 +230,11 @@ int main(void) {
     TEST_SORT(sort_quick_non_recursive);
 
     TEST_SORT(sort_heap);
+
+    test_sort2(sort_counting, "sort_counting");
+    test_sort2(sort_counting_stable, "sort_counting_stable");
+
+    TEST_SORT(sort_bucket);
 
     exit(EXIT_SUCCESS);
 }
