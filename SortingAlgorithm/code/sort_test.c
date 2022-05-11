@@ -91,17 +91,17 @@ static int sort_assert(sort_f fsort, const char * sort_name, const int test_inde
     // 假定数据量很小, 所以尝试打印所有数据
     // 
     fprintf(stderr, "sort %s 第 %d 组 len = %d 测试失败\n", sort_name, test_index, len);
-    fprintf(stderr, "原始:");
+    fprintf(stderr, "原始:\n");
     for (int i = 0; i < len; i++) {
-        fprintf(stderr, " %d", olda[i]);
+        fprintf(stderr, " %16d", olda[i]);
         if ((i+1) % 10 == 0) {
             fprintf(stderr, "\n");
         }
     }
     fprintf(stderr, "\n");
-    fprintf(stderr, "现在:");
+    fprintf(stderr, "现在:\n");
     for (int i = 0; i < len; i++) {
-        fprintf(stderr, " %d", a[i]);
+        fprintf(stderr, " %16d", a[i]);
         if ((i+1) % 10 == 0) {
             fprintf(stderr, "\n");
         }
@@ -163,6 +163,8 @@ static void test_sort(sort_f fsort, const char * sort_name, int test_count) {
 #include "sort_bubble.c"
 #include "sort_selection.c"
 #include "sort_insertion.c"
+#include "sort_shell.c"
+#include "sort_merge.c"
 
 #define TEST_SORT(fsort) test_sort(fsort, #fsort, COUNT)
 
@@ -178,6 +180,11 @@ int main(void) {
 
     TEST_SORT(sort_insertion);
     TEST_SORT(sort_insertion_upgrade);
+
+    TEST_SORT(sort_shell);
+
+    TEST_SORT(sort_merge);
+    TEST_SORT(sort_merge_non_recursive);
 
     exit(EXIT_SUCCESS);
 }
