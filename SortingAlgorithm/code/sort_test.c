@@ -165,6 +165,8 @@ static void test_sort(sort_f fsort, const char * sort_name, int test_count) {
 #include "sort_insertion.c"
 #include "sort_shell.c"
 #include "sort_merge.c"
+#include "sort_quick.c"
+#include "sort_heap.c"
 
 #define TEST_SORT(fsort) test_sort(fsort, #fsort, COUNT)
 
@@ -185,6 +187,11 @@ int main(void) {
 
     TEST_SORT(sort_merge);
     TEST_SORT(sort_merge_non_recursive);
+
+    TEST_SORT(sort_quick);
+    TEST_SORT(sort_quick_non_recursive);
+
+    TEST_SORT(sort_heap);
 
     exit(EXIT_SUCCESS);
 }

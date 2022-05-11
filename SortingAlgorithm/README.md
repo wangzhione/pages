@@ -97,3 +97,5 @@ sort_name 是 当前测试排序算法名称, test_index 是当前测试组索�
 8.  [计数排序](8.countingSort.md)
 9.  [桶排序](9.bucketSort.md)
 10. [基数排序](10.radixSort.md)
+
+纸上得来终觉浅，**绝知此事要躬行**。（南宋）陆游 《冬夜读书示子聿》

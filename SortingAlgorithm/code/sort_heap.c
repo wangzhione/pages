@@ -26,17 +26,23 @@ void sort_heap(int a[], int len) {
     }
 
     // 构建大顶堆
-    for (int parent = len/2; parent >= 0; parent--)
+    // 从最后一个父结点开始调整
+    // ∵ (len / 2) * 2 + 1 >= len
+    // ∵ (len / 2 - 1) * 2 + 1 <= len - 1
+    // ∴ 最后一个父结点是 len/2 - 1
+    int parent = len/2 - 1;
+    do {
         sort_heap_adjust(a, parent, len);
+    } while (--parent >= 0);
 
     // 开始交换大顶堆的顶端值, 构造有序数组
-    int n = len-1;
-    do {
-        int tmp = a[0];
-        a[0] = a[n];
-        a[n] = tmp;
-
+    for (;;) {
+        len--;
+        int temp = a[0]; a[0] = a[len]; a[len] = temp;
+        if (len <= 1) {
+            break;
+        }
         // 继续调整
-        sort_heap_adjust(a, 0, n);
-    } while (--n > 0);
+        sort_heap_adjust(a, 0, len);
+    }
 }
