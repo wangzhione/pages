@@ -28,6 +28,8 @@
 
 ![经典核心排序算法 概览截图](resources/sort.png)
 
+注: 希尔排序这条纪录不准确, 算法复杂度大致是 O(1.3, 2) 采用不同步长算法最终时间复杂度不一样. 
+
 ## 单元测试
 
 为了简洁凸显排序算法的核心步骤, 忽略数据业务复杂性, 我们事先约定, **1. int 整型数据测试 2. 排序后升序** . 有了这些我们开始聊单元测试构建. 主要分为两个部分, 1. 如何构造测试数据, 2. 如何判断算法最终有效性. 数据构造我们采用 rand() 自定义区间随机生成. 
@@ -85,13 +87,13 @@ sort_name 是 当前测试排序算法名称, test_index 是当前测试组索�
 
 ## 正文目录
 
-1. [冒泡排序](1.bubbleSort.md)
-2. [选择排序](2.selectionSort.md)
-3. [插入排序](3.insertionSort.md)
-4. [希尔排序](4.shellSort.md)
-5. [归并排序](5.mergeSort.md)
-6. [快速排序](6.quickSort.md)
-7. [堆排序](7.heapSort.md)
-8. [计数排序](8.countingSort.md)
-9. [桶排序](9.bucketSort.md)
+1.  [冒泡排序](1.bubbleSort.md)
+2.  [选择排序](2.selectionSort.md)
+3.  [插入排序](3.insertionSort.md)
+4.  [希尔排序](4.shellSort.md)
+5.  [归并排序](5.mergeSort.md)
+6.  [快速排序](6.quickSort.md)
+7.  [堆排序](7.heapSort.md)
+8.  [计数排序](8.countingSort.md)
+9.  [桶排序](9.bucketSort.md)
 10. [基数排序](10.radixSort.md)

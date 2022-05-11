@@ -158,7 +158,11 @@ static void test_sort(sort_f fsort, const char * sort_name, int test_count) {
  %e - insert coredumping executable name into filename 添加命令名
  */
 
+#define TEST_SORT_OFF
+
 #include "sort_bubble.c"
+#include "sort_selection.c"
+#include "sort_insertion.c"
 
 #define TEST_SORT(fsort) test_sort(fsort, #fsort, COUNT)
 
@@ -169,6 +173,11 @@ int main(void) {
 
     TEST_SORT(sort_bubble);
     TEST_SORT(sort_bubble_flag);
+
+    TEST_SORT(sort_selection);
+
+    TEST_SORT(sort_insertion);
+    TEST_SORT(sort_insertion_upgrade);
 
     exit(EXIT_SUCCESS);
 }
