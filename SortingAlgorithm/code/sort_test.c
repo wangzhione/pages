@@ -154,7 +154,7 @@ static void test_sort(sort_f fsort, const char * sort_name, int test_count) {
     fprintf(stdout, "sort %s 测试通过\n\n", sort_name);
 }
 
-static void test_sort2(sort_f fsort, const char * sort_name) {
+void test_sort2(sort_f fsort, const char * sort_name) {
     assert(fsort != NULL && sort_name != NULL);
 
     fprintf(stdout, "sort %s 测试开始\n", sort_name);
@@ -205,6 +205,7 @@ static void test_sort2(sort_f fsort, const char * sort_name) {
 #include "sort_heap.c"
 #include "sort_counting.c"
 #include "sort_bucket.c"
+#include "sort_radix.c"
 
 #define TEST_SORT(fsort) test_sort(fsort, #fsort, COUNT)
 
@@ -235,6 +236,9 @@ int main(void) {
     test_sort2(sort_counting_stable, "sort_counting_stable");
 
     TEST_SORT(sort_bucket);
+
+    test_sort2(sort_radix, "sort_radix");
+    TEST_SORT(sort_radix);
 
     exit(EXIT_SUCCESS);
 }

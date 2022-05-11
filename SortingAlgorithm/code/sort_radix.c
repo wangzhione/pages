@@ -1,26 +1,7 @@
-# 基数排序
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-基数排序(Radix Sort)是桶排序的扩展, 是一种非比较型整数排序算法, 其原理是将整数按位数切割成不同的数字, 然后按每个位数分别比较. 由于整数也可以表达字符串 (比如名字或日期) 和特定格式的浮点数, 所以基数排序也不是只能使用于整数.
-
-![radix sort](resources/radix_sort_1.jpg)
-
-## 1. 基数排序 vs 计数排序 vs 桶排序
-
-基数排序有两种方法:
-
-这三种排序算法都利用了桶的概念, 但对桶的使用方法上有些差异:
-
- - 基数排序: 根据键值的每位数字来分配桶;
- - 计数排序: 每个桶只存储单一键值;
- - 桶排序: 每个桶存储一定范围的数值;
-
-## 2. LSD 基数排序动图演示
-
-![动图演示](resources/radixSort.gif)
-
-## 3. C 语言描述
-
-```C
 static void sort_radix_partial(int a[], int len, int exp, int * temp) {
     int i, index;
     int buckets[10] = { 0 };
@@ -77,4 +58,29 @@ void sort_radix(int a[], int len) {
 
     free(temp);
 }
-```
+
+#ifndef TEST_SORT_OFF
+
+// gcc -g -O3 -Wall -Wextra -Werror -o sort_radix sort_radix.c
+int main(void) {
+    int a[] = { 3, 4, 5, 700, 800, 19, 10, 11, 1000, 300, 1, 1, 45, 33 };
+    int len = sizeof(a) / sizeof(*a);
+
+    printf("原始:");
+    for (int i = 0; i < len; i++) {
+        printf(" %d", a[i]);
+    }
+    printf("\n");
+
+    sort_radix(a, len);
+
+    printf("现在:");
+    for (int i = 0; i < len; i++) {
+        printf(" %d", a[i]);
+    }
+    printf("\n");
+
+    exit(EXIT_SUCCESS);
+}
+
+#endif//TEST_SORT_OFF
