@@ -7,6 +7,7 @@
 #include <stdbool.h>
 
 // 为了简单, 我们假定数据都是 int, 并且最终结果要求 小 -> 大 升序
+//
 // 测试大致思路:
 // 随机生成数据, 为了简单假定数据长度范围在 [LOW, HIGH] 之间, 持续 COUNT 轮测试.
 //
@@ -60,7 +61,7 @@ static int sort_assert_partial(const char * sort_name, const int test_index, int
             continue;
 
         // case : 存在 a[i-1] > a[i] 不正常数据
-        fprintf(stderr, "sort %s 第 %d 组 len = %d [%d > %d] 测试失败.\n", sort_name, test_index, len, a[i-1], a[i]);
+        fprintf(stderr, "sort %s 第 %d 组 len = %d [%d > %d] 测试失败\n", sort_name, test_index, len, a[i-1], a[i]);
         return -1;
     }
 
@@ -72,14 +73,11 @@ static int sort_assert_partial(const char * sort_name, const int test_index, int
 
         int value = olda[i];
         for (int j = 0; j < len; j++) {
-            if (a[j] == value) {
-                // 如果之前已经判定过, 跳过去重新开始
-                if (check[j]) {}
-                else {
-                    exists = true;
-                    check[j] = true;
-                    break;
-                }
+            // 找到首次映射的值
+            if (a[j] == value && !check[j]) {
+                exists = true;
+                check[j] = true;
+                break;
             }
         }
 
@@ -88,11 +86,12 @@ static int sort_assert_partial(const char * sort_name, const int test_index, int
         
         // case : 原始数据丢失
         fprintf(stderr, "sort %s 第 %d 组 len = %d 测试失败 [%d : %d]\n", sort_name, test_index, len, i, value);
+        
+        free(check);
         return -2;
     }
 
     free(check);
-
     return 0;
 }
 
@@ -172,28 +171,6 @@ void test_sort2(sort_f fsort, const char * sort_name) {
     fprintf(stdout, "sort %s 测试通过\n\n", sort_name);
 }
 
-// open core 
-//
-// ulimit -c unlimited
-//
-// cat /proc/sys/kernel/core_pattern
-// |/usr/share/apport/apport %p %s %c %d %P %E
-// cat /proc/sys/kernel/core_uses_pid
-// 0
-// su root
-// echo "1" > /proc/sys/kernel/core_uses_pid 
-// echo "core-%e-%p-%t" > /proc/sys/kernel/core_pattern
-
-/*
- %p - insert pid into filename 添加 pid
- %u - insert current uid into filename 添加当前 uid
- %g - insert current gid into filename 添加当前 gid
- %s - insert signal that caused the coredump into the filename 添加导致产生core的信号
- %t - insert UNIX time that the coredump occurred into filename 添加 core 文件生成时的unix时间
- %h - insert hostname where the coredump happened into filename 添加主机名
- %e - insert coredumping executable name into filename 添加命令名
- */
-
 #define TEST_SORT_OFF
 
 #include "sort_bubble.c"
@@ -242,3 +219,25 @@ int main(void) {
 
     exit(EXIT_SUCCESS);
 }
+
+// open core 
+//
+// ulimit -c unlimited
+//
+// cat /proc/sys/kernel/core_pattern
+// |/usr/share/apport/apport %p %s %c %d %P %E
+// cat /proc/sys/kernel/core_uses_pid
+// 0
+// su root
+// echo "1" > /proc/sys/kernel/core_uses_pid 
+// echo "core-%e-%p-%t" > /proc/sys/kernel/core_pattern
+
+/*
+ %p - insert pid into filename 添加 pid
+ %u - insert current uid into filename 添加当前 uid
+ %g - insert current gid into filename 添加当前 gid
+ %s - insert signal that caused the coredump into the filename 添加导致产生 core 的信号
+ %t - insert UNIX time that the coredump occurred into filename 添加 core 文件生成时的 unix 时间
+ %h - insert hostname where the coredump happened into filename 添加主机名
+ %e - insert coredumping executable name into filename 添加命令名
+ */

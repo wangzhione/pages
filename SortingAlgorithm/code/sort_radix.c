@@ -1,12 +1,14 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 static void sort_radix_partial(int a[], int len, int exp, int * temp) {
     int i, index;
     int buckets[10] = { 0 };
 
-    // 将特定位出现的次数存储再 buckets[] 桶中
+    // 将特定位出现的次数存储在 buckets[] 桶中
     for (i = 0; i < len; i++) {
         index = (a[i] / exp) % 10;
         buckets[index]++;
@@ -59,6 +61,37 @@ void sort_radix(int a[], int len) {
     free(temp);
 }
 
+// getintexpmax 这个是错误方法, 因为 gcc x * y = z 能够保证 z / y = x
+// vmax = 2147483647, expmax = 1000000000, value = 1410065408, value/10=1000000000, value/expmax=10
+// vmax = 2147483647, expmax = 1410065408, value = 1215752192, value/10=1410065408, value/expmax=10
+int getintexpmax(int vmax) {
+    int expmax = 1;
+
+    while (expmax < vmax) {
+        int value = expmax * 10;
+        printf(
+            "vmax = %d, expmax = %d, value = %d, value/10=%d, value/expmax=%d\n", 
+            vmax, expmax, value, value/10, value/expmax
+        );
+        getchar();
+        if (value > vmax || value / 10 != expmax) {
+            break;
+        }
+        expmax *= 10;
+    }
+
+    return expmax;
+}
+
+int intexpmax(int vamx) {
+    int expmax = 1;
+    // 通过 INT_MAX / 10 判断是否越界
+    while (expmax < vamx && INT_MAX / expmax >= 10) {
+        expmax *= 10;
+    }
+    return expmax;
+}
+
 #ifndef TEST_SORT_OFF
 
 // gcc -g -O3 -Wall -Wextra -Werror -o sort_radix sort_radix.c
@@ -79,6 +112,9 @@ int main(void) {
         printf(" %d", a[i]);
     }
     printf("\n");
+
+    // printf("expmax = %d, %d, %d\n", getintexpmax(-2147483648), getintexpmax(2147483647), getintexpmax(99));
+    printf("expmax = %d, %d, %d\n", intexpmax(-2147483648), intexpmax(2147483647), intexpmax(99));
 
     exit(EXIT_SUCCESS);
 }
