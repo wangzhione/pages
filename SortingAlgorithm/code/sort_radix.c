@@ -48,9 +48,10 @@ void sort_radix(int a[], int len) {
 
     // int 范围 -2,147,483,648 到 2,147,483,647
     // 我们这里默认是 int 正数, 最大 exp max = 1,000,000,000 = 10 ^ 9 
-    int expmax = 1000000000;
-    while (expmax > vmax) {
-        expmax /= 10;
+    int expmax = 1;
+    // 通过 INT_MAX / 10 判断是否越界
+    while (expmax < vmax && INT_MAX / expmax >= 10) {
+        expmax *= 10;
     }
 
     // 按个位进行排序时, exp=1; 按十位进行排序时, exp=10; ...
@@ -83,10 +84,10 @@ int getintexpmax(int vmax) {
     return expmax;
 }
 
-int intexpmax(int vamx) {
+int intexpmax(int vmax) {
     int expmax = 1;
     // 通过 INT_MAX / 10 判断是否越界
-    while (expmax < vamx && INT_MAX / expmax >= 10) {
+    while (expmax < vmax && INT_MAX / expmax >= 10) {
         expmax *= 10;
     }
     return expmax;

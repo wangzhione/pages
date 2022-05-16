@@ -93,15 +93,15 @@ void sort_counting_stable(int a[], int len) {
 
     // sorted array 
     int * sorted = malloc(len * sizeof(int));
+
     // 倒序遍历原数组, 然后放入 sorted array 中保证稳定性
     for (i = len-1; i >= 0; i--) {
         // 计算原数组元素在统计数组中的索引
         int index = a[i] - vmin;
         // 计算其排序后的位置, 因为数组索引从 0 开始计算, 故应对排序位置减 1
         // 例如, 排在最前面的元素, 排序位置为 1, 则其在数组中的位置索引应为 0
-        int sorti = counts[index] - 1;
         // 将原数组元素放入排序后的位置上
-        sorted[sorti] = a[i];
+        sorted[counts[index] - 1] = a[i];
         // 下一个重复的元素, 应排前一个位置, 以保证稳定性
         counts[index]--;
     }
