@@ -388,6 +388,18 @@ int main(void) {
 
 ```
 
+## 8
+
+### [error] 8.6.5 opendir-readdir 函数
+
+opendir 和 closedir 需要成双成对防止内存泄漏.
+
+## 9
+
+### [info] 9.2 I/) 库函数与系统调用
+
+BLKSIZE 其实没有必要, 可以直接系统定义的 BUFSIZ, 少定义哥宏呢.
+
 ## 13
 
 ### 13.15 TCP 回显服务器 - 客户机程序
