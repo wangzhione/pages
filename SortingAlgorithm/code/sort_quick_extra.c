@@ -6,61 +6,58 @@ static inline void sort_quick_swap(int * a, int i, int j) {
     int t = a[i]; a[i] = a[j]; a[j] = t;
 }
 
-// array [l, r]
+// array [left, right]
 // 
-// v  : pivot , 一般是 l 指向的值 array[l]
-// lt : 指向小于 v 部分的最后一个元素 
-// gt : 指向大于 v 部分的第一个元素
-// i  : 遍历索引 
-// e  : a[i]
+// pivot    : 一般是 left 指向的值 array[left]
+// lt       : 指向小于 pivot 部分的最后一个元素 
+// gt       : 指向大于 pivot 部分的第一个元素
+// i        : 遍历索引 
+// e        : a[i]
 // 
 // 从 i 开始向后遍历: 
-// 如果遍历的元素 e = v, 则 e 直接合并到 = v 部分, 然后 i++ 继续遍历.
-// 如果遍历的元素 e < v, 则将 e 和 =v 部分的第一个元素 (lt + 1 指向的元素) 交换, 然后 lt++, i++ 继续遍历.
-// 如果遍历的元素 e > v, 则将 e 和 >v 部分前一个元素 (gt - 1 指向的元素) 交换, 然后 gt--, 
+// 如果遍历的元素 e = pivot, 则 e 直接合并到 = pivot 部分, 然后 i++ 继续遍历.
+// 如果遍历的元素 e < pivot, 则将 e 和 =pivot 部分的第一个元素 (lt + 1 指向的元素) 交换, 然后 lt++, i++ 继续遍历.
+// 如果遍历的元素 e > pivot, 则将 e 和 >pivot 部分前一个元素 (gt - 1 指向的元素) 交换, 然后 gt--, 
 //                     不过此时 i 不需要改变, 因为 i 位置的元素是和 gt 位置前面的空白元素交换过来的.
 //
 //
-// array [l, r]
+// array [left, right]
 // 
-// l        lt        i    gt   r
-// | v | < v  | = v | e | |  >v |
+// left        lt        i    gt   right
+// | pivot | < pivot  | = pivot | e | |  >pivot |
 //
-// 遍历完后 i = gt, 然后将 l 指向元素和 lt 指向元素交换
+// 遍历完后 i = gt, 然后将 left 指向元素和 lt 指向元素交换
 // 
-// l        lt        i gt    r
-// | v | < v  | = v |     > v |
+// left        lt        i gt    right
+// | pivot| < pivot  | = pivot |     > pivot |
 //
-// l       lt     gt    r
-// | < v  |  = v |  > v |
+// left       lt     gt    right
+// | < pivot  |  = pivot |  > pivot |
 //
-static void sort_quick_extra_partial(int a[], int l, int r) {
-    // 随机在 a [l, r] 范围中, 选择一个点作为 pivot 锚点
-    sort_quick_swap(a, l, rand() % (r - l + 1) + l);
+static void sort_quick_extra_partial(int a[], int left, int right) {
+    // 随机在 a [left, right] 范围中, 选择一个点作为 pivot 锚点
+    sort_quick_swap(a, left, rand() % (right - left + 1) + left);
 
-    int v = a[l];     // pivot , 一般是 l 指向的值 array[l]
-    int lt = l;       // a[l+1, lt] <  v , 指向小于 v 部分的最后一个元素. 初始化 l, 空集合, 随后逐渐向右扩.
-    int gt = r+1;     // a[gt, r]   >  v , 指向大于 v 部分的第一个元素. 初始化 r + 1, 空集合, 随后逐渐向左缩.
-    int i = l+1;      // a[lt+1, i] == v , 直到 i == gt
+    int pivot = a[left];    // pivot, 一般是 left 指向的值 array[left]
+    int lt = left;          // a[left+1, lt] <  pivot , 指向小于 pivot 部分的最后一个元素. 初始化 left, 空集合, 随后逐渐向右扩.
+    int gt = right+1;       // a[gt, right]  >  pivot , 指向大于 pivot 部分的第一个元素. 初始化 right + 1, 空集合, 随后逐渐向左缩.
+    int i = left+1;         // a[lt+1, i]    == pivot , 直到 i == gt
     while (i < gt) {
-        if (a[i] < v) {
-            sort_quick_swap(a, i, lt+1);
-            i++;
-            lt++;
-        } else if (a[i] > v) {
-            sort_quick_swap(a, i, gt-1);
-            gt--;
+        if (a[i] < pivot) {
+            sort_quick_swap(a, i++, ++lt);
+        } else if (a[i] > pivot) {
+            sort_quick_swap(a, i, --gt);
         } else {
             i++;
         }
     }
-    sort_quick_swap(a, l, lt);
+    sort_quick_swap(a, left, lt);
 
-    if (l < lt-1) {
-        sort_quick_extra_partial(a, l, lt-1);
+    if (left < lt-1) {
+        sort_quick_extra_partial(a, left, lt-1);
     }
-    if (gt < r) {
-        sort_quick_extra_partial(a, gt, r);
+    if (gt < right) {
+        sort_quick_extra_partial(a, gt, right);
     }
 }
 
