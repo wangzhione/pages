@@ -12,27 +12,26 @@ static inline void sort_quick_swap(int * a, int i, int j) {
 // lt       : 指向小于 pivot 部分的最后一个元素 
 // gt       : 指向大于 pivot 部分的第一个元素
 // i        : 遍历索引 
-// e        : a[i]
 // 
 // 从 i 开始向后遍历: 
-// 如果遍历的元素 e = pivot, 则 e 直接合并到 = pivot 部分, 然后 i++ 继续遍历.
-// 如果遍历的元素 e < pivot, 则将 e 和 =pivot 部分的第一个元素 (lt + 1 指向的元素) 交换, 然后 lt++, i++ 继续遍历.
-// 如果遍历的元素 e > pivot, 则将 e 和 >pivot 部分前一个元素 (gt - 1 指向的元素) 交换, 然后 gt--, 
+// 如果遍历的元素 a[i] = pivot, 则 a[i] 直接合并到 = pivot 部分, 然后 i++ 继续遍历.
+// 如果遍历的元素 a[i] < pivot, 则将 a[i] 和 =pivot 部分的第一个元素 (lt + 1 指向的元素) 交换, 然后 lt++, i++ 继续遍历.
+// 如果遍历的元素 a[i] > pivot, 则将 a[i] 和 >pivot 部分前一个元素 (gt - 1 指向的元素) 交换, 然后 gt--, 
 //                     不过此时 i 不需要改变, 因为 i 位置的元素是和 gt 位置前面的空白元素交换过来的.
 //
 //
 // array [left, right]
 // 
-// left        lt        i    gt   right
-// | pivot | < pivot  | = pivot | e | |  >pivot |
+// left                lt               i    gt       right
+// |    pivot | < pivot  | = pivot | a[i] | |  >pivot |
 //
 // 遍历完后 i = gt, 然后将 left 指向元素和 lt 指向元素交换
 // 
-// left        lt        i gt    right
-// | pivot| < pivot  | = pivot |     > pivot |
+// left               lt         i gt           right
+// |    pivot| < pivot  | = pivot |     > pivot |
 //
-// left       lt     gt    right
-// | < pivot  |  = pivot |  > pivot |
+// left          lt          gt        right
+// |    < pivot  |  = pivot |  > pivot |
 //
 static void sort_quick_extra_partial(int a[], int left, int right) {
     // 随机在 a [left, right] 范围中, 选择一个点作为 pivot 锚点
