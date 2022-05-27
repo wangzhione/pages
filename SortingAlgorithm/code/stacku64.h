@@ -18,7 +18,7 @@ inline struct stacku64 stacku64_create(void) {
     return (struct stacku64) {
         .tail = -1,
         .cap = INTU64_STACKINT,
-        .data = malloc(sizeof(int) * INTU64_STACKINT),
+        .data = malloc(sizeof(uint64_t) * INTU64_STACKINT),
     };
 }
 

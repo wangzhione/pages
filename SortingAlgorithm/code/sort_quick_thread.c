@@ -29,7 +29,7 @@ do {                                                                            
 // 千万 10000000   * 4 = 40000000   Byte = 39062.5 KB = 38.1469726563 MB
 // 亿级 100000000  * 4 = 400000000  BYte = 390625  KB = 381.469726563 MB
 // 十亿 1000000000 * 4 = 4000000000 BYte = 3906250 KB = 3814.69726563 MB = 3.72529029846 G
-#define TEST_ARRATN_INT  (100)
+#define TEST_ARRATN_INT  (100000000)
 
 typedef void (* sort_f)(int * a, int len);
 
@@ -37,7 +37,7 @@ static int benchmark_sort_compare(void const * left, void const * right) {
     return *(int const *)left > *(int const *)right;
 }
 
-static void benchmark_sort(int * a, int len) {
+void benchmark_sort(int * a, int len) {
     qsort(a, len, sizeof(int), benchmark_sort_compare);
 }
 
@@ -162,18 +162,17 @@ struct thread_quick_sort {
 void stack_push(struct thread_quick_sort * arg, uint32_t left, uint32_t right) {
     atomic_fetch_add(&arg->count, 1);
     pthread_mutex_lock(&arg->mutex);
-    uint64_t m = (uint64_t)(left) << 32 | (right);
+    uint64_t m = ((uint64_t)(left) << 32) | (right);
     stacku64_push(&arg->s, m);
     pthread_mutex_unlock(&arg->mutex);
 }
 
 bool stack_pop(struct thread_quick_sort * arg, uint32_t * left, uint32_t * right) {
-    POUT("thread_quick_sort_func start, count : %d, left:%u, right:%u\n", atomic_load(&arg->count), *left, *right);
     pthread_mutex_lock(&arg->mutex);
     if (stacku64_exist(&arg->s)) {
         uint64_t m = stacku64_pop(&arg->s);
         *left = (uint32_t)(m >> 32);
-        *right = (uint32_t) (m | 0xFFFFFFFF);
+        *right = (uint32_t) (m & 0xFFFFFFFF);
         pthread_mutex_unlock(&arg->mutex);
         return true;
     }
@@ -182,13 +181,10 @@ bool stack_pop(struct thread_quick_sort * arg, uint32_t * left, uint32_t * right
 }
 
 void thread_quick_sort_func(struct thread_quick_sort * arg) {
-    uint32_t left, right;
-
-    POUT("thread_quick_sort_func start, count : %d\n", atomic_load(&arg->count));
+    uint32_t left = 0, right = 0;
 
     while (atomic_load(&arg->count) > 0) {
         bool exists = stack_pop(arg, &left, &right);
-        POUT("thread_quick_sort_func start, count : %d, left:%u, right:%u\n", atomic_load(&arg->count), left, right);
         if (!exists) {
             continue;
         }
@@ -198,7 +194,6 @@ void thread_quick_sort_func(struct thread_quick_sort * arg) {
         if (high - low <= INT_SORT_INSERT) {
             insert_sort(low, high);
             atomic_fetch_sub(&arg->count, 1);
-            POUT("thread_quick_sort_func start, count : %d\n", atomic_load(&arg->count));
             continue;;
         }
 
@@ -221,15 +216,12 @@ void thread_quick_sort_func(struct thread_quick_sort * arg) {
         swap(low, lt);
 
         if (low < lt-1) {
-            POUT("thread_quick_sort_func start, count : %d\n", atomic_load(&arg->count));
             stack_push(arg, left, (uint32_t)(lt - arg->array - 1));
         }
         if (gt < high) {
-            POUT("thread_quick_sort_func start, count : %d\n", atomic_load(&arg->count));
             stack_push(arg, (uint32_t)(gt - arg->array), right);
         }
         atomic_fetch_sub(&arg->count, 1);
-        POUT("thread_quick_sort_func start, count : %d\n", atomic_load(&arg->count));
     } 
 }
 
@@ -247,10 +239,11 @@ void thread_quick_sort(int * a, int len) {
     arg.s = stacku64_create();
     stack_push(&arg, 0, len-1);
 
+    // thread_quick_sort_func(&arg);
+
     pthread_t threads[2];
     for (int i = 0; i < (int)(sizeof(threads)/sizeof(pthread_t)); i++) {
-        threads[i] = pthread_create(threads+i, NULL, (void *)thread_quick_sort_func, &arg);
-        if (threads[i]) {
+        if (pthread_create(threads+i, NULL, (void *)thread_quick_sort_func, &arg)) {
             PERR("threads %d error", i);
             exit(EXIT_FAILURE);
         }
@@ -286,9 +279,9 @@ void thread_quick_sort(int * a, int len) {
 //
 int main(void) {
 
-    benchmark_array_test(benchmark_sort);
+    // benchmark_array_test(benchmark_sort);
 
-    benchmark_array_test(benchmark_quick_sort);
+    // benchmark_array_test(benchmark_quick_sort);
 
     benchmark_array_test(thread_quick_sort);
 

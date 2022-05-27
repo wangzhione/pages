@@ -1,6 +1,6 @@
 {
     "files.associations": {
-        "*.h": "c",
-        "typeinfo": "c"
+        "initializer_list": "c",
+        "stdatomic.h": "c"
     }
 }
