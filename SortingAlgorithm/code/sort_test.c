@@ -179,6 +179,7 @@ void test_sort2(sort_f fsort, const char * sort_name) {
 #include "sort_shell.c"
 #include "sort_merge.c"
 #include "sort_quick.c"
+#include "sort_quick_extra.c"
 #include "sort_heap.c"
 #include "sort_counting.c"
 #include "sort_bucket.c"
@@ -206,6 +207,7 @@ int main(void) {
 
     TEST_SORT(sort_quick);
     TEST_SORT(sort_quick_non_recursive);
+    TEST_SORT(sort_quick_extra);
 
     TEST_SORT(sort_heap);
 

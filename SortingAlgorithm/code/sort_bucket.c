@@ -3,7 +3,7 @@
 #include <string.h>
 
 static int sort_bucket_compare(void const * left, void const * right) {
-    return *(int const *)left - *(int const *)right;
+    return *(int const *)left > *(int const *)right;
 }
 
 // bucket 桶排序

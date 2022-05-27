@@ -12,13 +12,13 @@ struct stacku64 {
     uint64_t * data;  // 栈实体
 };
 
-#define INT64_STACKINT   (1 << 8)
+#define INTU64_STACKINT   (1 << 9)
 
 inline struct stacku64 stacku64_create(void) {
     return (struct stacku64) {
         .tail = -1,
-        .cap = INT_STACKINT,
-        .data = malloc(sizeof(int) * INT_STACKINT),
+        .cap = INTU64_STACKINT,
+        .data = malloc(sizeof(int) * INTU64_STACKINT),
     };
 }
 
@@ -87,19 +87,4 @@ inline void stacku64_push(struct stacku64 * s, uint64_t m) {
     }
     s->data[++s->tail] = m;
 }
-
-// stacku64_push2 和 stacku64_pop2 用于压入两个 uint32_t left 和 right 数据
-
-#define stacku64_push2(s, left, right)              \
-do {                                                \
-    uint64_t m = (uint64_t)(left) << 32 | right;    \
-    stacku64_push(&s, m);                           \
-} while(0)                                          \
-
-#define stacku64_pop2(s, left, right)               \
-do {                                                \
-    uint64_t m = stacku64_pop(s);                   \
-    left = (uint32_t)(m >> 32);                     \
-    right = (uint32_t) (m | 0xFFFFFFFF);            \
-} while(0)
 
