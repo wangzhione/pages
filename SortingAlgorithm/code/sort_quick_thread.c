@@ -4,21 +4,6 @@
 
 #include "stacku64.h"
 
-// stack_push 和 stack_pop 用于压入两个 uint32_t left 和 right 数据
-
-#define stack_push(s, left, right)                  \
-do {                                                \
-    uint64_t m = (uint64_t)(left) << 32 | right;    \
-    stacku64_push(&s, m);                           \
-} while(0)                                          \
-
-#define stack_pop(s, left, right)                   \
-do {                                                \
-    uint64_t m = stacku64_pop(s);                   \
-    left = (uint32_t)(m >> 32);                     \
-    right = (uint32_t) (m | 0xFFFFFFFF);            \
-} while(0)
-
 static atomic_int id = ATOMIC_VAR_INIT(1);
 
 //
@@ -44,7 +29,7 @@ do {                                                                            
 // 千万 10000000   * 4 = 40000000   Byte = 39062.5 KB = 38.1469726563 MB
 // 亿级 100000000  * 4 = 400000000  BYte = 390625  KB = 381.469726563 MB
 // 十亿 1000000000 * 4 = 4000000000 BYte = 3906250 KB = 3814.69726563 MB = 3.72529029846 G
-#define TEST_ARRATN_INT  (20)
+#define TEST_ARRATN_INT  (100)
 
 typedef void (* sort_f)(int * a, int len);
 
@@ -113,51 +98,24 @@ static void insert_sort(int * low, int * high) {
             j[1] = anchor;
         }
     }
-
-    for (int * lo = low+1; lo <= high; lo++) {
-        if (lo[-1] <= lo[0]) {
-            continue;
-        }
-
-        printf("lo[-1] <= lo[0] failed, %d, %d\n", lo[-1], lo[0]);
-        assert(lo[-1] <= lo[0]);
-    }
 }
 
 #define INT_SORT_INSERT    (16)
 
 static void quick_sort_partial(int * low, int * high) {
-    // if (high - low <= INT_SORT_INSERT) {
-    //     insert_sort(low, high);
-    //     return;
-    // }
-    printf("1: ");
-    for (int * x = low; x <= high; x++) {
-        printf("%d ", *x);
+    if (high - low <= INT_SORT_INSERT) {
+        insert_sort(low, high);
+        return;
     }
-    printf("\n");
 
     // [low, high] 范围中, 随机选择一个锚点
-    int * now = low + rand() % (high - low + 1);
-    printf("now : %d, high : %d, *now : %d\n", now-low+1, high-low+1, *now);
-    swap(low, now);
-
-    printf("2: ");
-    for (int * x = low; x <= high; x++) {
-        printf("%d ", *x);
-    }
-    printf("\n");
+    swap(low, low + rand() % (high - low + 1));
 
     int povit = *low;       // povit, 默认首个元素
     int * lt = low;         // [low+1, lt] < povit, 指向 < povit 部分最后一个元素
     int * gt = high+1;      // [gt, high] > povit, 指向 > povit 部分第一个元素
     int * i = low+1;        // [lt+1, i] == v, 直到 i == gt 结束循环
     while (i < gt) {
-    printf("povit = %d, i: %d, lt: %d, gt: %d, high: %d ok\n", povit, i-low+1, lt-low+1, gt-low+1, high-low+1);
-    for (int * x = low; x <= high; x++) {
-        printf("%d ", *x);
-    }
-    printf("\n");
         if (*i < povit) {
             swap(i++, ++lt);
         } else if (*i > povit) {
@@ -167,27 +125,7 @@ static void quick_sort_partial(int * low, int * high) {
         }
     }
 
-    printf("3: ");
-    for (int * x = low; x <= high; x++) {
-        printf("%d ", *x);
-    }
-    printf("\n");
-
     swap(low, lt);
-
-    for (int * x = low ; x < lt; x++)
-        assert(*x < povit);
-    for(int * x = lt; x < gt; x++)
-        assert(*x == povit);
-    for(int *x = gt; x <= high; x++)
-        assert(*x > povit);
-    
-    printf("povit = %d, %d, %d, %d ok\n", povit, lt-low+1, gt-low+1, high-low+1);
-    printf("4: ");
-    for (int * x = low; x <= high; x++) {
-        printf("%d ", *x);
-    }
-    printf("\n");
 
     if (low < lt-1) {
         quick_sort_partial(low, lt-1);
@@ -197,9 +135,136 @@ static void quick_sort_partial(int * low, int * high) {
     }
 }
 
-static void benchmark_quick_sort_partial(int * a, int len) {
+void benchmark_quick_sort(int * a, int len) {
+    if (a == NULL || len <= 1) {
+        return;
+    }
+
     quick_sort_partial(a, a + len - 1);
 }
+
+struct thread_quick_sort {
+    // 用于消费队列
+    struct stacku64 s;
+
+    // 数组首地址
+    int * array;
+
+    // 资源互斥锁, 主要用于保护 队列消费和生产
+    pthread_mutex_t mutex;
+
+    // 未消费完成任务数量
+    atomic_int count;
+};
+
+// stack_push 和 stack_pop 用于压入两个 uint32_t left 和 right 数据
+
+void stack_push(struct thread_quick_sort * arg, uint32_t left, uint32_t right) {
+    atomic_fetch_add(&arg->count, 1);
+    pthread_mutex_lock(&arg->mutex);
+    uint64_t m = (uint64_t)(left) << 32 | (right);
+    stacku64_push(&arg->s, m);
+    pthread_mutex_unlock(&arg->mutex);
+}
+
+bool stack_pop(struct thread_quick_sort * arg, uint32_t * left, uint32_t * right) {
+    POUT("thread_quick_sort_func start, count : %d, left:%u, right:%u\n", atomic_load(&arg->count), *left, *right);
+    pthread_mutex_lock(&arg->mutex);
+    if (stacku64_exist(&arg->s)) {
+        uint64_t m = stacku64_pop(&arg->s);
+        *left = (uint32_t)(m >> 32);
+        *right = (uint32_t) (m | 0xFFFFFFFF);
+        pthread_mutex_unlock(&arg->mutex);
+        return true;
+    }
+    pthread_mutex_unlock(&arg->mutex);
+    return false;
+}
+
+void thread_quick_sort_func(struct thread_quick_sort * arg) {
+    uint32_t left, right;
+
+    POUT("thread_quick_sort_func start, count : %d\n", atomic_load(&arg->count));
+
+    while (atomic_load(&arg->count) > 0) {
+        bool exists = stack_pop(arg, &left, &right);
+        POUT("thread_quick_sort_func start, count : %d, left:%u, right:%u\n", atomic_load(&arg->count), left, right);
+        if (!exists) {
+            continue;
+        }
+
+        int * low = arg->array + left;
+        int * high = arg->array + right;
+        if (high - low <= INT_SORT_INSERT) {
+            insert_sort(low, high);
+            atomic_fetch_sub(&arg->count, 1);
+            POUT("thread_quick_sort_func start, count : %d\n", atomic_load(&arg->count));
+            continue;;
+        }
+
+        // [low, high] 范围中, 随机选择一个锚点
+        swap(low, low + rand() % (high - low + 1));
+
+        int povit = *low;       // povit, 默认首个元素
+        int * lt = low;         // [low+1, lt] < povit, 指向 < povit 部分最后一个元素
+        int * gt = high+1;      // [gt, high] > povit, 指向 > povit 部分第一个元素
+        int * i = low+1;        // [lt+1, i] == v, 直到 i == gt 结束循环
+        while (i < gt) {
+            if (*i < povit) {
+                swap(i++, ++lt);
+            } else if (*i > povit) {
+                swap(i, --gt);
+            } else {
+                i++;
+            }
+        }
+        swap(low, lt);
+
+        if (low < lt-1) {
+            POUT("thread_quick_sort_func start, count : %d\n", atomic_load(&arg->count));
+            stack_push(arg, left, (uint32_t)(lt - arg->array - 1));
+        }
+        if (gt < high) {
+            POUT("thread_quick_sort_func start, count : %d\n", atomic_load(&arg->count));
+            stack_push(arg, (uint32_t)(gt - arg->array), right);
+        }
+        atomic_fetch_sub(&arg->count, 1);
+        POUT("thread_quick_sort_func start, count : %d\n", atomic_load(&arg->count));
+    } 
+}
+
+void thread_quick_sort(int * a, int len) {
+    if (a == NULL || len <= 1) {
+        return;
+    }
+
+    // 单纯为了实验, 采用 2 个线程去处理
+    struct thread_quick_sort arg = { .array = a };
+    if (pthread_mutex_init(&arg.mutex, NULL)) {
+        PERR("pthread_mutex_init error");
+        return;
+    }
+    arg.s = stacku64_create();
+    stack_push(&arg, 0, len-1);
+
+    pthread_t threads[2];
+    for (int i = 0; i < (int)(sizeof(threads)/sizeof(pthread_t)); i++) {
+        threads[i] = pthread_create(threads+i, NULL, (void *)thread_quick_sort_func, &arg);
+        if (threads[i]) {
+            PERR("threads %d error", i);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // 等待线程结束
+    for (int i = 0; i < (int)(sizeof(threads)/sizeof(pthread_t)); i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    stacku64_release(&arg.s);
+    pthread_mutex_destroy(&arg.mutex);
+}
+
 
 // gcc -g -O3 -Wall -Wextra -o sort_quick_thread sort_quick_thread.c -lpthread
 // 
@@ -223,7 +288,9 @@ int main(void) {
 
     benchmark_array_test(benchmark_sort);
 
-    benchmark_array_test(benchmark_quick_sort_partial);
+    benchmark_array_test(benchmark_quick_sort);
+
+    benchmark_array_test(thread_quick_sort);
 
     exit(EXIT_SUCCESS);
 }
